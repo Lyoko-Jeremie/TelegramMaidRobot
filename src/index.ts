@@ -14,7 +14,7 @@ moment.locale('zh-CN');
 const LokiFsStructuredAdapter = require('lokijs/src/loki-fs-structured-adapter.js');
 const lokiFsStructuredAdapter = new LokiFsStructuredAdapter();
 let databaseInitialize: () => void;
-const DB: Loki = new Loki("DB.json", {
+const DB: Loki = new Loki("db/DB.json", {
     adapter: lokiFsStructuredAdapter,
     autoload: true,
     autoloadCallback: () => {
@@ -67,6 +67,7 @@ async function main() {
             'command me "/hipster"',
             'command me "/getDatetime"',
             'command me "/register" to listen WebHook event',
+            'command me "/unregister" to un-listen WebHook event',
         ];
         for (let i = 0; i != sList.length; ++i) {
             s += "\n" + (i + 1) + " " + sList[i];
@@ -143,10 +144,25 @@ async function main() {
             const ui = new UserChatInfo(T);
             console.log(ui.print());
 
-            // adminIdList.set(T.id, ui);
+            if (adminListDB.by('id', ui.id)) {
+                ctx.reply('Em? Master.(⊙_⊙)？' + '\nMaster~~ you can use /un_admin to exit this chat level. ');
+                return;
+            }
             adminListDB.insert(ui);
 
-            ctx.reply('Hey Master !!!');
+            ctx.reply('Hey Master !!!' + '\nMaster~~ you can use /un_admin to exit this chat level. ');
+        }).catch(E => {
+            ctx.reply('error, try again. you need use this on private chat.');
+        });
+    });
+    bot.command('un_admin', (ctx: ContextMessageUpdate) => {
+        ctx.getChat().then(T => {
+            const ui = new UserChatInfo(T);
+            console.log(ui.print());
+
+            adminListDB.chain().find({id: ui.id}).remove();
+
+            ctx.reply('Good-Bye Master~~\n ヾ(￣▽￣)Bye~Bye~');
         }).catch(E => {
             ctx.reply('error, try again. you need use this on private chat.');
         });
@@ -185,19 +201,40 @@ async function main() {
                 return;
             }
 
-            let it = new WebHookListenerIdItem();
-            it.start = moment().format();
-            it.ui = ui;
-            it.cid = ui.id;
-            hookListenerListDB.insert(it);
+            let isRegistered = false;
+            if (hookListenerListDB.by('cid', ui.id)) {
+                ctx.reply('Em? Master.(⊙_⊙)？' + '\nMaster~~ you are registered. ');
+                isRegistered = true;
+            } else {
+                let it = new WebHookListenerIdItem();
+                it.start = moment().format();
+                it.ui = ui;
+                it.cid = ui.id;
+                hookListenerListDB.insert(it);
+            }
 
-            ctx.reply('register OK.' +
+            ctx.reply('' +
+                (isRegistered ? 'registered.' : 'register OK.') +
                 ' \ncommand "/count" to get event count.' +
                 ' \ncommand "/tick" to get tick from you last register.' +
                 ' \ncommand "/get" to list all listener. ' +
                 ' \ncommand "/resetAllRegisterEvent" to reset all event. ' +
+                ' \ncommand "/unregister" to unregister. ' +
                 ''
             );
+        }).catch(E => {
+            ctx.reply('error, try again. you need use this on private chat.');
+        });
+    });
+
+    bot.command('unregister', (ctx: ContextMessageUpdate) => {
+        ctx.getChat().then(T => {
+            const ui = new UserChatInfo(T);
+            console.log(ui.print());
+
+            hookListenerListDB.chain().find({cid: ui.id}).remove();
+
+            ctx.reply('unregister OK.');
         }).catch(E => {
             ctx.reply('error, try again. you need use this on private chat.');
         });
