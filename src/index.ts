@@ -37,16 +37,24 @@ async function main() {
 
     const Telegraf = require('telegraf');
 
-    const SocksAgent = require('socks5-https-client/lib/Agent');
+    let socksAgent;
+    if (process.env.socksPort) {
+        console.log("find socksPort, use SocksAgent");
 
-    const socksAgent = new SocksAgent({
-        // socksHost: config.proxy.host,
-        // socksPort: config.proxy.port,
-        // socksUsername: config.proxy.login,
-        // socksPassword: config.proxy.psswd,
-        socksHost: process.env.socksHost,
-        socksPort: process.env.socksPort,
-    });
+        const SocksAgent = require('socks5-https-client/lib/Agent');
+
+        socksAgent = new SocksAgent({
+            // socksHost: config.proxy.host,
+            // socksPort: config.proxy.port,
+            // socksUsername: config.proxy.login,
+            // socksPassword: config.proxy.psswd,
+            socksHost: process.env.socksHost,
+            socksPort: process.env.socksPort,
+        });
+
+    } else {
+        console.log("not find socksPort, not use SocksAgent");
+    }
 
     const bot = new Telegraf(process.env.BOT_TOKEN, {
         telegram: {agent: socksAgent}
