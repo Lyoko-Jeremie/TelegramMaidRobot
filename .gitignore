@@ -140,3 +140,4 @@ typings/
 /YOURPEM.pem
 /YOURPEM.cer
 /dist/
+/db/
