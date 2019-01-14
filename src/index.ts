@@ -142,7 +142,7 @@ bot.command(process.env.AdminPasswd || "AdminPassword", (ctx) => {
         const ui = new UserChatInfo(T);
         console.log(ui.print());
 
-        adminIdList.set(T.id, ui);
+        // adminIdList.set(T.id, ui);
         adminListDB.insert(ui);
 
         ctx.reply('Hey Master !!!');
@@ -181,10 +181,10 @@ bot.command('register', (ctx: ContextMessageUpdate) => {
         const ui = new UserChatInfo(T);
         console.log(ui.print());
 
-        if (!adminIdList.has(T.id)) {
-            ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
-            return;
-        }
+        // if (!adminIdList.has(T.id)) {
+        //     ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
+        //     return;
+        // }
         if (!adminListDB.by('id', T.id)) {
             ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
             return;
@@ -194,7 +194,7 @@ bot.command('register', (ctx: ContextMessageUpdate) => {
         it.start = moment().format();
         it.ui = ui;
         it.cid = ui.id;
-        hookListenerIdList.set(T.id, it);
+        // hookListenerIdList.set(T.id, it);
         hookListenerListDB.insert(it);
 
         ctx.reply('register OK.' +
@@ -211,15 +211,15 @@ bot.command('register', (ctx: ContextMessageUpdate) => {
 
 bot.command('get', (ctx: ContextMessageUpdate) => {
     ctx.getChat().then(T => {
-        if (!adminIdList.has(T.id)) {
-            ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
-            return;
-        }
+        // if (!adminIdList.has(T.id)) {
+        //     ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
+        //     return;
+        // }
         if (!adminListDB.by('id', T.id)) {
             ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
             return;
         }
-        ctx.reply('' + JSON.stringify(hookListenerIdList));
+        // ctx.reply('' + JSON.stringify(hookListenerIdList));
         ctx.reply('' + JSON.stringify(hookListenerListDB.data));
     }).catch(E => {
         ctx.reply('error, try again. you need use this on private chat.');
@@ -227,22 +227,22 @@ bot.command('get', (ctx: ContextMessageUpdate) => {
 });
 bot.command('resetAllRegisterEvent', (ctx: ContextMessageUpdate) => {
     ctx.getChat().then(T => {
-        if (!adminIdList.has(T.id)) {
-            ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
-            return;
-        }
+        // if (!adminIdList.has(T.id)) {
+        //     ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
+        //     return;
+        // }
         if (!adminListDB.by('id', T.id)) {
             ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
             return;
         }
-        hookListenerIdList.forEach((v, k, m) => {
-            v.count = 0;
-            v.eventList = [];
-            bot.telegram.sendMessage(k, "Muuu~~ " +
-                "\nMaster tell me to reset ALL THE EVENT. " +
-                "\nSo, I reset It !!!"
-            );
-        });
+        // hookListenerIdList.forEach((v, k, m) => {
+        //     v.count = 0;
+        //     v.eventList = [];
+        //     bot.telegram.sendMessage(k, "Muuu~~ " +
+        //         "\nMaster tell me to reset ALL THE EVENT. " +
+        //         "\nSo, I reset It !!!"
+        //     );
+        // });
         hookListenerListDB.data.forEach((v) => {
             v.count = 0;
             v.eventList = [];
@@ -250,6 +250,7 @@ bot.command('resetAllRegisterEvent', (ctx: ContextMessageUpdate) => {
                 "\nMaster tell me to reset ALL THE EVENT. " +
                 "\nSo, I reset It !!!"
             );
+            hookListenerListDB.update(v);
         });
         ctx.reply('OK~~ Master~~(≧▽≦)');
     }).catch(E => {
@@ -258,12 +259,12 @@ bot.command('resetAllRegisterEvent', (ctx: ContextMessageUpdate) => {
 });
 bot.command('count', (ctx: ContextMessageUpdate) => {
     ctx.getChat().then(T => {
-        const n = hookListenerIdList.get(T.id);
-        if (!isNil(n)) {
-            ctx.reply('count:' + n.count);
-        } else {
-            ctx.reply('not find. \ncommand me "/register" to listen WebHook event.');
-        }
+        // const n = hookListenerIdList.get(T.id);
+        // if (!isNil(n)) {
+        //     ctx.reply('count:' + n.count);
+        // } else {
+        //     ctx.reply('not find. \ncommand me "/register" to listen WebHook event.');
+        // }
         const nd = hookListenerListDB.by('cid', T.id);
         if (!isNil(nd)) {
             ctx.reply('count:' + nd.count);
@@ -276,17 +277,19 @@ bot.command('count', (ctx: ContextMessageUpdate) => {
 });
 bot.command('tick', (ctx: ContextMessageUpdate) => {
     ctx.getChat().then(T => {
-        const n = hookListenerIdList.get(T.id);
-        if (!isNil(n)) {
-            ctx.reply('count:' + n.tick +
-                ' \n' + moment.duration(n.tick, 'seconds').humanize()
-            );
-        } else {
-            ctx.reply('not find. \ncommand me "/register" to listen WebHook event.');
-        }
+        // const n = hookListenerIdList.get(T.id);
+        // if (!isNil(n)) {
+        //     ctx.reply('tick:' + n.tick +
+        //         ' \n' + moment.duration(n.tick, 'seconds').humanize()
+        //     );
+        // } else {
+        //     ctx.reply('not find. \ncommand me "/register" to listen WebHook event.');
+        // }
         const nd = hookListenerListDB.by('cid', T.id);
         if (!isNil(nd)) {
-            ctx.reply('count:' + nd.count);
+            ctx.reply('tick:' + nd.tick +
+                ' \n' + moment.duration(nd.tick, 'seconds').humanize()
+            );
         } else {
             ctx.reply('not find. \ncommand me "/register" to listen WebHook event.');
         }
@@ -297,11 +300,12 @@ bot.command('tick', (ctx: ContextMessageUpdate) => {
 
 
 setInterval(() => {
-    hookListenerIdList.forEach((v, k, m) => {
-        ++v.tick;
-    });
+    // hookListenerIdList.forEach((v, k, m) => {
+    //     ++v.tick;
+    // });
     hookListenerListDB.data.forEach((v) => {
         ++v.tick;
+        hookListenerListDB.update(v);
     });
 }, 1000);
 
@@ -313,21 +317,21 @@ expressApp.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 expressApp.all('/test', (req, res) => {
     // console.log(JSON.stringify(req.body));
     if (has(req.body, "event")) {
-        hookListenerIdList.forEach((v, k, m) => {
-            ++v.count;
-
-            let ev = new WebHookEventItem();
-            ev.event = get(req.body, "event");
-            ev.text = get(req.body, "text");
-            ev.date = moment().format();
-            v.eventList.push(ev);
-
-            bot.telegram.sendMessage(k, "WebHook event Coming!!!!!!!!!!!!!!\n" +
-                get(req.body, "event") + "\n" +
-                get(req.body, "text") + "\n" +
-                ""
-            );
-        });
+        // hookListenerIdList.forEach((v, k, m) => {
+        //     ++v.count;
+        //
+        //     let ev = new WebHookEventItem();
+        //     ev.event = get(req.body, "event");
+        //     ev.text = get(req.body, "text");
+        //     ev.date = moment().format();
+        //     v.eventList.push(ev);
+        //
+        //     bot.telegram.sendMessage(k, "WebHook event Coming!!!!!!!!!!!!!!\n" +
+        //         get(req.body, "event") + "\n" +
+        //         get(req.body, "text") + "\n" +
+        //         ""
+        //     );
+        // });
         hookListenerListDB.data.forEach((v) => {
             ++v.count;
 
@@ -336,6 +340,8 @@ expressApp.all('/test', (req, res) => {
             ev.text = get(req.body, "text");
             ev.date = moment().format();
             v.eventList.push(ev);
+
+            hookListenerListDB.update(v);
 
             bot.telegram.sendMessage(v.cid, "WebHook event Coming!!!!!!!!!!!!!!\n" +
                 get(req.body, "event") + "\n" +
