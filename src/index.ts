@@ -68,6 +68,7 @@ async function main() {
             'command me "/getDatetime"',
             'command me "/register" to listen WebHook event',
             'command me "/unregister" to un-listen WebHook event',
+            'command me "/liveTime" to get my live time info',
         ];
         for (let i = 0; i != sList.length; ++i) {
             s += "\n" + (i + 1) + " " + sList[i];
@@ -135,6 +136,14 @@ async function main() {
     bot.command('modern', ({reply}) => reply('Yo'));
     bot.command('hipster', Telegraf.reply('λ'));
     bot.command('getDatetime', (ctx) => ctx.reply(moment().format()));
+
+    let startTime = moment();
+    bot.command('liveTime', (ctx) => {
+        ctx.reply(''
+            + ' \n' + 'alive time: ' + moment().from(startTime)
+            + ' \n' + 'last boot time: ' + startTime.format('YYYY-MM-DD HH:mm:ss')
+        );
+    });
 
     const adminListDB: Loki.Collection<UserChatInfo> =
         collectionGetter("adminList", {unique: ['id']});
