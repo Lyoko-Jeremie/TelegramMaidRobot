@@ -8,7 +8,7 @@ import {get} from "lodash";
 import {has} from "lodash";
 import {ContextMessageUpdate} from "telegraf";
 import moment = require("moment");
-import {git_pull, restart_service, tsc_build} from "./self_upgrade_command";
+import {asyncSleep, git_pull, restart_service, tsc_build} from "./self_upgrade_command";
 
 moment.locale('zh-CN');
 
@@ -229,6 +229,8 @@ async function main() {
                     + '\n\nerror:' + T.err
                     + '\n\n\nNow~~ I will restart myself. see you later, Master~~◝(　ﾟ∀ ﾟ )◟ .'
                 );
+                return asyncSleep(1000 * 3);
+            }).then(T => {
                 return restart_service();
             }).then(T => {
                 ctx.reply('restart command OK! Master~~~(っ●ω●)っ .' +
