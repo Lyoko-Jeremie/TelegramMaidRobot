@@ -5,7 +5,8 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "node ./dist/index.js"
+    "start": "node ./dist/index.js",
+    "build": "tsc"
   },
   "dependencies": {
     "@types/core-js": "^2.5.0",
