@@ -366,6 +366,7 @@ databaseInitialize = () => {
         console.log("main ok");
     }).catch(E => {
         console.error("main error", E);
+        process.exit(-1);
     });
 };
 
