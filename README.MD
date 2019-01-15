@@ -1,6 +1,6 @@
 
 
-set env:
+set env before run:
 
 ```
 BOT_TOKEN=<YouBotTokenKey(must)>
@@ -9,4 +9,9 @@ AdminPasswd=<AdminPassword(optional,default:/AdminPassword)>
 socksPort=<Sock5ProxyPort(optional,if not config socksPort, not use proxy)>
 socksHost=<Sock5Proxyhost(optional,if not config socksPort, this will not work)>
 ```
+
+
+all database will save on ```db``` dir.
+
+
 
