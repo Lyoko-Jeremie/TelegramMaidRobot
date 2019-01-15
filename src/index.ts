@@ -8,7 +8,7 @@ import {get} from "lodash";
 import {has} from "lodash";
 import {ContextMessageUpdate} from "telegraf";
 import moment = require("moment");
-import {git_pull, tsc_build} from "./self_upgrade_command";
+import {git_pull, restart_service, tsc_build} from "./self_upgrade_command";
 
 moment.locale('zh-CN');
 
@@ -211,7 +211,6 @@ async function main() {
                 return;
             }
 
-            // TODO
             ctx.reply('Hai! Master~~~(っ●ω●)っ .');
             git_pull().then(T => {
                 ctx.reply('Git Pull OK! Master~~~(っ●ω●)っ .' +
@@ -219,11 +218,20 @@ async function main() {
                     + '\n\ncode:' + T.code
                     + '\n\nout:' + T.out
                     + '\n\nerror:' + T.err
-                    + '\n\n\nNow~~ I will build it. see you later, Master~~◝(　ﾟ∀ ﾟ )◟ .'
+                    + '\n\n\nNow~~ I will build it.'
                 );
                 return tsc_build();
             }).then(T => {
                 ctx.reply('Tsc Build OK! Master~~~(っ●ω●)っ .' +
+                    '\nfollow is the log:\n'
+                    + '\n\ncode:' + T.code
+                    + '\n\nout:' + T.out
+                    + '\n\nerror:' + T.err
+                    + '\n\n\nNow~~ I will restart myself. see you later, Master~~◝(　ﾟ∀ ﾟ )◟ .'
+                );
+                return restart_service();
+            }).then(T => {
+                ctx.reply('restart command OK! Master~~~(っ●ω●)っ .' +
                     '\nfollow is the log:\n'
                     + '\n\ncode:' + T.code
                     + '\n\nout:' + T.out

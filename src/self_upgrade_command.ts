@@ -42,4 +42,8 @@ export function tsc_build() {
     return runChildProcess('tsc', []);
 }
 
+export function restart_service() {
+    return runChildProcess('./restartServiceScript/restartService.sh', []);
+}
+
 
