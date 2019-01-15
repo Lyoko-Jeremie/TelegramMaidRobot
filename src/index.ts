@@ -350,7 +350,7 @@ async function main() {
         }
         res.send('Hello World!');
     });
-    expressApp.listen(10050, () => {
+    expressApp.listen(process.env.HttpListenPort || 10050, () => {
         console.log('Example app listening on port 10050!')
     });
 
