@@ -423,6 +423,10 @@ async function main() {
 
     bot.startPolling();
 
+    // hello to master
+    adminListDB.data.forEach((v) => {
+        bot.telegram.sendMessage(v.id, "Hi~ Master~~ I coming~~\n(^u^) Always serving for you Master~~");
+    });
 
 }
 
