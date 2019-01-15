@@ -215,19 +215,19 @@ async function main() {
             git_pull().then(T => {
                 ctx.reply('Git Pull OK! Master~~~(っ●ω●)っ .' +
                     '\nfollow is the log:\n'
-                    + '\n\ncode:' + T.code
-                    + '\n\nout:' + T.out
-                    + '\n\nerror:' + T.err
+                    + '\ncode:' + T.code
+                    + '\nout:' + T.out
+                    + '\nerror:' + T.err
                     + '\n\n\nNow~~ I will build it.'
                 );
                 return tsc_build();
             }).then(T => {
                 ctx.reply('Tsc Build OK! Master~~~(っ●ω●)っ .' +
                     '\nfollow is the log:\n'
-                    + '\n\ncode:' + T.code
-                    + '\n\nout:' + T.out
-                    + '\n\nerror:' + T.err
-                    + '\n\n\nNow~~ I will restart myself. see you later, Master~~◝(　ﾟ∀ ﾟ )◟ .'
+                    + '\ncode:' + T.code
+                    + '\nout:' + T.out
+                    + '\nerror:' + T.err
+                    + '\n\n\nNow~~ I will restart myself. \nsee you later, Master~~◝(　ﾟ∀ ﾟ )◟ .'
                 );
                 return asyncSleep(1000 * 3);
             }).then(T => {
@@ -235,16 +235,16 @@ async function main() {
             }).then(T => {
                 ctx.reply('restart command OK! Master~~~(っ●ω●)っ .' +
                     '\nfollow is the log:\n'
-                    + '\n\ncode:' + T.code
-                    + '\n\nout:' + T.out
-                    + '\n\nerror:' + T.err
+                    + '\ncode:' + T.code
+                    + '\nout:' + T.out
+                    + '\nerror:' + T.err
                 );
             }).catch(E => {
                 ctx.reply('Something Wrong! Master~~~(>ω<).' +
                     '\nfollow is the log:\n'
-                    + '\n\ncode:' + E.code
-                    + '\n\nout:' + E.out
-                    + '\n\nerror:' + E.err
+                    + '\ncode:' + E.code
+                    + '\nout:' + E.out
+                    + '\nerror:' + E.err
                 );
             });
         }).catch(E => {
