@@ -6,24 +6,17 @@ import {assign} from "lodash";
 
 function runChildProcess(exePath: string, args: ReadonlyArray<string> = [], options: SpawnOptions = {}): Promise<{ code: any, out: any, err: any }> {
     return new Promise((resolve, reject) => {
-        let stdout = new Readable();
-        let stderr = new Readable();
-        let stdin = new Writable();
-
-        stdout.on('data', data => {
-            out = data;
-            console.log(`stdout: ${data}`);
-        });
-        stderr.on('data', data => {
-            err = data;
-            console.log(`stderr: ${data}`);
-        });
-
-        const childProcess = spawn(exePath, args, assign(options, {
-            stdio: [stdin, stdout, stderr]
-        }));
+        const childProcess = spawn(exePath, args, assign(options, {}));
         let out: string = "";
         let err: string = "";
+        childProcess.stdout.on('data', data => {
+            out += data;
+            console.log(`stdout: ${data}`);
+        });
+        childProcess.stderr.on('data', data => {
+            err += data;
+            console.log(`stderr: ${data}`);
+        });
         childProcess.on('close', code => {
             if (code == 0) {
                 resolve({
