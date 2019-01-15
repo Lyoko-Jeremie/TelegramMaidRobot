@@ -71,7 +71,7 @@ export function tsc_build() {
  *
  *
  * and create a .sh file for reboot this service on   project_dir/restartServiceScript/restartService.sh
- *
+ * set it chmod +x
  * content is follow
 
  sudo systemctl restart BotMaid
