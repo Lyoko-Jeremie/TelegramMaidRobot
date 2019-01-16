@@ -82,7 +82,7 @@ export class BotAdmin {
                     );
                     return yarn_update_dependence();
                 }).then(T => {
-                    ctx.reply('Tsc Build OK! Master~~~(っ●ω●)っ .' +
+                    ctx.reply('Yarn Update Dependence OK! Master~~~(っ●ω●)っ .' +
                         '\nfollow is the log:\n'
                         + '\ncode:' + T.code
                         + '\nout:' + T.out
