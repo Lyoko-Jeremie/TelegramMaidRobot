@@ -1,27 +1,48 @@
 import {Telegraf, ContextMessageUpdate} from "telegraf";
+import {Chat, ChatPhoto, Message} from "telegraf/typings/telegram-types";
 import * as moment from "moment";
 import {Subject} from "rxjs";
 
 
-export class UserChatInfo {
+export class UserChatInfo implements Chat {
+
     /**
-     * chat id
+     * Unique identifier for this chat. This number may be greater than 32 bits
+     * and some programming languages may have difficulty/silent defects in
+     * interpreting it. But it is smaller than 52 bits, so a signed 64 bit
+     * integer or double-precision float type are safe for storing this identifier.
      */
     id: number;
     /**
      * Type of chat, can be either “private”, “group”, “supergroup” or “channel”
      */
     type: string;
-    username: string;
-    first_name: string;
-    last_name: string;
+    first_name?: string;
+    last_name?: string;
+    username?: string;
+    title?: string;
+    description?: string;
+    invite_link?: string;
+    sticker_set_name?: string;
+    photo?: ChatPhoto;
+    pinned_message?: Message;
+    all_members_are_administrators?: boolean;
+    can_set_sticker_set?: boolean;
 
-    constructor(c) {
+    constructor(c: Chat) {
         this.id = c.id;
         this.type = c.type;
-        this.username = c.username;
         this.first_name = c.first_name;
         this.last_name = c.last_name;
+        this.username = c.username;
+        this.title = c.title;
+        this.description = c.description;
+        this.invite_link = c.invite_link;
+        this.sticker_set_name = c.sticker_set_name;
+        this.photo = c.photo;
+        this.pinned_message = c.pinned_message;
+        this.all_members_are_administrators = c.all_members_are_administrators;
+        this.can_set_sticker_set = c.can_set_sticker_set;
     }
 
     print() {
@@ -29,12 +50,14 @@ export class UserChatInfo {
             + "======================================"
             + "\nid:" + this.id
             + "\ntype:" + this.type
+            + "\ntitle:" + this.title
             + "\nusername:" + this.username
             + "\nfirst_name:" + this.first_name
             + "\nlast_name:" + this.last_name
             + "\n"
             + "======================================";
     }
+
 }
 
 export class BotBase {
