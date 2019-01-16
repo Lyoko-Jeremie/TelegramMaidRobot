@@ -87,7 +87,7 @@ export class BotAdmin {
                         + '\ncode:' + T.code
                         + '\nout:' + T.out
                         + '\nerror:' + T.err
-                        + '\n\n\nNow~~ I will restart myself. \nsee you later, Master~~◝(　ﾟ∀ ﾟ )◟ .'
+                        + '\n\n\nNow~~ I will build it.'
                     );
                     return tsc_build();
                 }).then(T => {
