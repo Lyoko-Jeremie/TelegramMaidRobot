@@ -39,6 +39,10 @@ export function git_pull() {
     return runChildProcess('git', ['pull']);
 }
 
+export function yarn_update_dependence() {
+    return runChildProcess('yarn', []);
+}
+
 export function tsc_build() {
     return runChildProcess('tsc', []);
 }

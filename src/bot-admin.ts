@@ -1,4 +1,4 @@
-import {asyncSleep, git_pull, restart_service, tsc_build} from "./self_upgrade_command";
+import {asyncSleep, git_pull, restart_service, tsc_build, yarn_update_dependence} from "./self_upgrade_command";
 import {ContextMessageUpdate} from "telegraf";
 import {BotBase, UserChatInfo} from "./bot-base";
 import {Database} from "./database";
@@ -78,7 +78,16 @@ export class BotAdmin {
                         + '\ncode:' + T.code
                         + '\nout:' + T.out
                         + '\nerror:' + T.err
-                        + '\n\n\nNow~~ I will build it.'
+                        + '\n\n\nNow~~ I will update dependence.'
+                    );
+                    return yarn_update_dependence();
+                }).then(T => {
+                    ctx.reply('Tsc Build OK! Master~~~(っ●ω●)っ .' +
+                        '\nfollow is the log:\n'
+                        + '\ncode:' + T.code
+                        + '\nout:' + T.out
+                        + '\nerror:' + T.err
+                        + '\n\n\nNow~~ I will restart myself. \nsee you later, Master~~◝(　ﾟ∀ ﾟ )◟ .'
                     );
                     return tsc_build();
                 }).then(T => {
