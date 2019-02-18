@@ -9,6 +9,7 @@ import {BotWebEvent} from "./bot-web-event";
 import "rxjs/add/operator/filter";
 
 import moment = require("moment");
+import {BotWebpageSaver} from "./bot-webpage-saver";
 
 // set local
 moment.locale('zh-CN');
@@ -27,6 +28,7 @@ database.databaseInitialize.asObservable().filter(T => {
 
         const botAdmin = new BotAdmin(botBase, database);
         const botWebEvent = new BotWebEvent(botBase, database, botAdmin);
+        const botWebpageSaver = new BotWebpageSaver(botBase, database, botAdmin);
 
         botBase.start();
         botAdmin.start();

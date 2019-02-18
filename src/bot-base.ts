@@ -60,6 +60,11 @@ export class UserChatInfo implements Chat {
 
 }
 
+export interface ContextMessageUpdateCustom extends ContextMessageUpdate {
+    chatInfo: Chat;
+    userChatInfo: UserChatInfo;
+}
+
 export class BotBase {
     public bot: Telegraf<ContextMessageUpdate>;
     public botHelpEvent: Subject<ContextMessageUpdate> = new Subject<ContextMessageUpdate>();
@@ -95,6 +100,21 @@ export class BotBase {
             (<any>this.bot).options.username = botInfo.username;
         });
 
+
+        this.bot.use((ctx: ContextMessageUpdateCustom, next: () => any) => {
+            ctx.getChat().then(T => {
+                const ui = new UserChatInfo(T);
+                console.log(ui.print());
+                // console.log("Last received non text message ARE come from:\n" + ui.print());
+                ctx.chatInfo = T;
+                ctx.userChatInfo = ui;
+                return next();
+            }).catch(E => {
+                // console.error("received non text message getChat ERROR.", E);
+
+                return next();
+            });
+        });
 
         this.bot.use((ctx: ContextMessageUpdate, next: () => any) => {
             if (ctx.message && ctx.message.text) {

@@ -3,10 +3,15 @@ import {ContextMessageUpdate} from "telegraf";
 import {BotBase, UserChatInfo} from "./bot-base";
 import {Database} from "./database";
 import * as Loki from "lokijs";
+import {isNil} from "lodash";
 
 export class BotAdmin {
     public adminListDB: Loki.Collection<UserChatInfo> =
         this.db.collectionGetter("adminList", {unique: ['id']});
+
+    public isAdmin(ui: UserChatInfo): boolean {
+        return !isNil(this.adminListDB.by('id', ui.id));
+    }
 
     constructor(private botBase: BotBase, private db: Database) {
         if (!db.databaseInitialize.getValue()) {
