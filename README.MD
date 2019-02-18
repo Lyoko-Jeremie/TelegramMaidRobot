@@ -24,3 +24,12 @@ all database will save on ```db``` dir.
 
 
 
+about the function ```save web page to pdf``` (aka: ```WebPageSaver``` ) :  
+   
+this function use phantom to work, and the phantom use pre-phantom , the pre-phantom will use a embedded phantom  
+so, you dont need to install phantom manual, but the phantom use the system font to render pages  
+so, if you need the character work well on pages, you need install font on windows or install ```libfontconfig``` in linux.  
+and install whatever font you need to show on the web pages.  
+BTW: because of the issue of phantom, this function need project local as temp storage dir to storage those web pages.
+
+
