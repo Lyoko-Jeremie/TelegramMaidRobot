@@ -261,6 +261,7 @@ export class BotWebpageSaver {
                     {reply_to_message_id: ctx.message.message_id},
                 ).then(() => T);
             }).catch(E => {
+                console.error(E);
                 ctx.reply('something wrong:\n' + E, {reply_to_message_id: ctx.message.message_id});
             });
 
