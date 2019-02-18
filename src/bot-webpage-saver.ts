@@ -6,6 +6,7 @@ import {sleepAwait} from "./sleep";
 import {values, max, isNil, isString, assign, trimStart, trimEnd, parseInt, isNumber} from "lodash";
 import * as moment from "moment";
 import * as phantom from "phantom";
+import * as fs from "fs";
 
 type getPageConfig = {
     url: string,
@@ -257,7 +258,7 @@ export class BotWebpageSaver {
             }).then(T => {
                 return this.botBase.bot.telegram.sendDocument(
                     ctx.userChatInfo.id,
-                    T.pdf,
+                    <any>fs.createReadStream(T.pdf),
                     {reply_to_message_id: ctx.message.message_id},
                 ).then(() => T);
             }).catch(E => {
