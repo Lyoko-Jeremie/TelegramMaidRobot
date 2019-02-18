@@ -256,9 +256,9 @@ export class BotWebpageSaver {
                     {reply_to_message_id: ctx.message.message_id},
                 ).then(() => T);
             }).then(T => {
-                return this.botBase.bot.telegram.sendDocument(
-                    ctx.userChatInfo.id,
-                    <any>fs.createReadStream(T.pdf),
+                return ctx.replyWithDocument({
+                        source: T.pdf,
+                    },
                     {reply_to_message_id: ctx.message.message_id},
                 ).then(() => T);
             }).catch(E => {
