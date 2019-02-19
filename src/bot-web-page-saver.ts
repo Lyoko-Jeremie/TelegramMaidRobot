@@ -286,7 +286,7 @@ export class BotWebPageSaver {
                 });
             }).then(T => {
                 if (T.e.length > 0)
-                    ctx.reply('something wrong:\n' + T.e, {reply_to_message_id: ctx.message.message_id});
+                    ctx.reply('something wrong during uploading :\n' + T.e, {reply_to_message_id: ctx.message.message_id});
             }).catch(E => {
                 console.error(E);
                 ctx.reply('something wrong:\n' + E, {reply_to_message_id: ctx.message.message_id});
