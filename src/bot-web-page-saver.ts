@@ -6,7 +6,6 @@ import {sleepAwait} from "./sleep";
 import {values, max, isNil, isString, assign, trimStart, trimEnd, parseInt, isNumber} from "lodash";
 import * as moment from "moment";
 import * as phantom from "phantom";
-import * as fs from "fs";
 
 type getPageConfig = {
     url: string,
@@ -80,15 +79,15 @@ async function getPage(config?: getPageConfig) {
 
 
     // bPDF not work
-    let bPDF = await page.renderBase64('pdf');
-    let bPNG = await page.renderBase64('png');
-
-    console.log(isNil(bPDF));
-    console.log(isString(bPDF));
-    console.log(bPDF.length);
-    console.log(isNil(bPNG));
-    console.log(isString(bPNG));
-    console.log(bPNG.length);
+    // let bPDF = await page.renderBase64('pdf');
+    // let bPNG = await page.renderBase64('png');
+    //
+    // console.log(isNil(bPDF));
+    // console.log(isString(bPDF));
+    // console.log(bPDF.length);
+    // console.log(isNil(bPNG));
+    // console.log(isString(bPNG));
+    // console.log(bPNG.length);
 
     // TODO fileName from config
     // TODO or
@@ -96,10 +95,12 @@ async function getPage(config?: getPageConfig) {
     const fileName = moment().format('YYYY_MM_DD_HH_mm_ss_SSS');
     await page.render(fileName + '.pdf');
     await page.render(fileName + '.png');
+    await page.render(fileName + '.jpg');
 
     await instance.exit();
 
     return {
+        jpg: fileName + '.jpg',
         png: fileName + '.png',
         pdf: fileName + '.pdf',
     };
@@ -110,7 +111,7 @@ class WebPageUserChatInfo extends UserChatInfo {
     height?: number;
 }
 
-export class BotWebpageSaver {
+export class BotWebPageSaver {
     public webPageSaverListDB: Loki.Collection<WebPageUserChatInfo> =
         this.db.collectionGetter("webPageSaverList", {unique: ['id']});
 
@@ -245,22 +246,47 @@ export class BotWebpageSaver {
                     height: cf.height || defaultViewportSize.height,
                 },
             }).then(T => {
+                let R = {
+                    d: T,
+                    e: [],
+                };
                 return ctx.reply(
                     'ok. file uploading...',
                     {reply_to_message_id: ctx.message.message_id}
-                ).then(() => T);
+                ).then(() => R);
             }).then(T => {
                 return ctx.replyWithPhoto({
-                        source: T.png,
+                        source: T.d.jpg,
                     },
                     {reply_to_message_id: ctx.message.message_id},
-                ).then(() => T);
+                ).then(() => T).catch(E => {
+                    console.error(E);
+                    T.e.push(E);
+                    return T;
+                });
             }).then(T => {
                 return ctx.replyWithDocument({
-                        source: T.pdf,
+                        source: T.d.png,
                     },
                     {reply_to_message_id: ctx.message.message_id},
-                ).then(() => T);
+                ).then(() => T).catch(E => {
+                    console.error(E);
+                    T.e.push(E);
+                    return T;
+                });
+            }).then(T => {
+                return ctx.replyWithDocument({
+                        source: T.d.pdf,
+                    },
+                    {reply_to_message_id: ctx.message.message_id},
+                ).then(() => T).catch(E => {
+                    console.error(E);
+                    T.e.push(E);
+                    return T;
+                });
+            }).then(T => {
+                if (T.e.length > 0)
+                    ctx.reply('something wrong:\n' + T.e, {reply_to_message_id: ctx.message.message_id});
             }).catch(E => {
                 console.error(E);
                 ctx.reply('something wrong:\n' + E, {reply_to_message_id: ctx.message.message_id});
