@@ -149,6 +149,9 @@ export class BotWebPageSaver {
                             + 'Oh~~ I see you are in Web Page Saver Mode.'
                             + '\nSo~ you can send me a web page URL , i will save it.'
                             + '\nor Command me "/stop_webSaver" to stop Web Page Saver Mode.'
+                            + '\n'
+                            + '\n debug command :'
+                            + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
                         );
                         return;
                     }
