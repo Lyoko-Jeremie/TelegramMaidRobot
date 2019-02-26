@@ -193,6 +193,9 @@ export class BotWebPageSaver {
                 ctx.reply('Hey !!!'
                     + '\nyou can send me a web page URL , i will save it.'
                     + '\nor use /stop_webSaver to exit Web Page Saver Mode. '
+                    + '\n'
+                    + '\n debug command :'
+                    + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
                 );
 
             }).catch(E => {
