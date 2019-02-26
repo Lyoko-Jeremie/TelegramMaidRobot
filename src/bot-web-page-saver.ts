@@ -6,6 +6,9 @@ import {sleepAwait} from "./sleep";
 import {values, max, isNil, isString, assign, trimStart, trimEnd, parseInt, isNumber} from "lodash";
 import * as moment from "moment";
 import * as phantom from "phantom";
+import * as fs from "fs";
+import * as Bluebird from "bluebird";
+import {PhantomJS} from "phantom";
 
 type getPageConfig = {
     url: string,
@@ -18,8 +21,13 @@ const defaultViewportSize = {
     height: 600,
 };
 
+let runningPhantomObject: Map<string, PhantomJS> = new Map<string, PhantomJS>();
+
 async function getPage(config?: getPageConfig) {
     const instance = await phantom.create();
+    const fileName = moment().format('YYYY_MM_DD_HH_mm_ss_SSS');
+    runningPhantomObject.set(fileName, instance);
+
     const page = await instance.createPage();
     await page.on('onResourceRequested', function (requestData) {
         console.info('Requesting', requestData.url);
@@ -89,20 +97,30 @@ async function getPage(config?: getPageConfig) {
     // console.log(isString(bPNG));
     // console.log(bPNG.length);
 
-    // TODO fileName from config
-    // TODO or
-    // TODO return fileName to caller
-    const fileName = moment().format('YYYY_MM_DD_HH_mm_ss_SSS');
+    // fileName from config
+    // or
+    // return fileName to caller
     await page.render(fileName + '.pdf');
     await page.render(fileName + '.png');
     await page.render(fileName + '.jpg');
 
+    await new Bluebird((resolve, reject) => {
+        fs.writeFile(fileName + '.html', content, (err) => {
+            if (err) {
+                reject(err);
+            }
+            resolve();
+        });
+    });
+
     await instance.exit();
+    runningPhantomObject.delete(fileName);
 
     return {
         jpg: fileName + '.jpg',
         png: fileName + '.png',
         pdf: fileName + '.pdf',
+        html: fileName + '.html',
     };
 }
 
@@ -138,6 +156,9 @@ export class BotWebPageSaver {
                         + 'Oh~~ I see you are Master.'
                         + '\nSo~ you can use Master Only Command:'
                         + '\n Command me "/start_webSaver" to start Web Page Saver Mode.'
+                        + '\n'
+                        + '\n debug command :'
+                        + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
                     );
                     return;
                 }
@@ -176,6 +197,31 @@ export class BotWebPageSaver {
             });
         });
 
+        botBase.bot.command('___ForeStopAllRunningWebSaverPhantomObject', (ctx: ContextMessageUpdateCustom) => {
+
+            ctx.getChat().then(T => {
+                const ui = new UserChatInfo(T);
+                console.log(ui.print());
+
+                if (!botAdmin.isAdmin(ui)) {
+                    ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
+                    return;
+                }
+
+                const i = runningPhantomObject.size;
+                runningPhantomObject.forEach(R => {
+                    R.exit();
+                });
+                runningPhantomObject.clear();
+
+                ctx.reply('AllRunningPhantomObject Cleaned !!!'
+                    + '\nremoved : ' + i
+                );
+
+            }).catch(E => {
+                // ctx.reply('error, try again. you need use this on private chat.');
+            });
+        });
         botBase.bot.command('stop_webSaver', (ctx: ContextMessageUpdateCustom) => {
             ctx.getChat().then(T => {
                 const ui = new UserChatInfo(T);
@@ -249,6 +295,7 @@ export class BotWebPageSaver {
                 let R = {
                     d: T,
                     e: [],
+                    s: s,
                 };
                 return ctx.reply(
                     'ok. file uploading...',
@@ -285,6 +332,22 @@ export class BotWebPageSaver {
                     return T;
                 });
             }).then(T => {
+                const sl = T.d.pdf
+                    + "\t" + T.d.png
+                    + "\t" + T.d.jpg
+                    + "\t" + JSON.stringify(T.e)
+                    + "\t" + T.s
+                    + "\r\n";
+                fs.appendFile(
+                    'WebPageSaverLog.txt',
+                    sl,
+                    (err: NodeJS.ErrnoException) => {
+                        if (err) {
+                            console.log("WebPageSaverLog error of : ", err);
+                            console.log("on : " + sl);
+                        }
+                    }
+                );
                 if (T.e.length > 0)
                     ctx.reply('something wrong during uploading :\n' + T.e, {reply_to_message_id: ctx.message.message_id});
             }).catch(E => {
