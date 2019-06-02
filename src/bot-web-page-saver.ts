@@ -68,7 +68,7 @@ async function getPage(config?: getPageConfig) {
 
     let pageScrollH = viewportSize.height / 2;
     const pageScroll = async (i) => {
-        let h = await  getPageHeight();
+        let h = await getPageHeight();
         if (pageScrollH * i + viewportSize.height < h) {
             await sleepAwait(1000);
             await page.property('scrollPosition', {
@@ -133,6 +133,8 @@ export class BotWebPageSaver {
     public webPageSaverListDB: Loki.Collection<WebPageUserChatInfo> =
         this.db.collectionGetter("webPageSaverList", {unique: ['id']});
 
+    private needUpload: boolean = true;
+
     constructor(private botBase: BotBase, private db: Database, private botAdmin: BotAdmin) {
         if (!db.databaseInitialize.getValue()) {
             console.error("Must Init & Load Database before construct BotWebEvent");
@@ -150,6 +152,10 @@ export class BotWebPageSaver {
                             + '\nSo~ you can send me a web page URL , i will save it.'
                             + '\nor Command me "/stop_webSaver" to stop Web Page Saver Mode.'
                             + '\n'
+                            + '\nBTW : now i ' + (this.needUpload ? 'will' : 'don\'t') + ' upload the result.'
+                            + '\n   you can use "/webSaver_needUpload" to tell me upload then,'
+                            + '\n   or use "/webSaver_notUpload" to tell me don\'t upload then.'
+                            + '\n'
                             + '\n debug command :'
                             + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
                         );
@@ -159,6 +165,10 @@ export class BotWebPageSaver {
                         + 'Oh~~ I see you are Master.'
                         + '\nSo~ you can use Master Only Command:'
                         + '\n Command me "/start_webSaver" to start Web Page Saver Mode.'
+                        + '\n'
+                        + '\nBTW : now i ' + (this.needUpload ? 'will' : 'don\'t') + ' upload the result.'
+                        + '\n   you can use "/webSaver_needUpload" to tell me upload then,'
+                        + '\n   or use "/webSaver_notUpload" to tell me don\'t upload then.'
                         + '\n'
                         + '\n debug command :'
                         + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
@@ -170,6 +180,82 @@ export class BotWebPageSaver {
             });
         });
 
+        botBase.bot.command('webSaver_needUpload', (ctx: ContextMessageUpdateCustom) => {
+            ctx.getChat().then(T => {
+                const ui = new UserChatInfo(T);
+                console.log(ui.print());
+
+                if (!botAdmin.isAdmin(ui)) {
+                    ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
+                    return;
+                }
+
+                this.needUpload = true;
+
+                // if (this.webPageSaverListDB.by('id', ui.id)) {
+                //     ctx.reply('Em? (⊙_⊙)？'
+                //         + '\nyou can use /stop_webSaver to exit Web Page Saver Mode. '
+                //         + '\nor send me a web page URL , i will save it.'
+                //     );
+                //     return;
+                // }
+                //
+                // this.webPageSaverListDB.insert(ui);
+
+                ctx.reply('Hey !!!'
+                    + '\nyou can send me a web page URL , i will save it.'
+                    + '\nor use /stop_webSaver to exit Web Page Saver Mode. '
+                    + '\n'
+                    + '\nBTW : now i ' + (this.needUpload ? 'will' : 'don\'t') + ' upload the result.'
+                    + '\n   you can use "/webSaver_needUpload" to tell me upload then,'
+                    + '\n   or use "/webSaver_notUpload" to tell me don\'t upload then.'
+                    + '\n'
+                    + '\n debug command :'
+                    + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
+                );
+
+            }).catch(E => {
+                // ctx.reply('error, try again. you need use this on private chat.');
+            });
+        });
+        botBase.bot.command('webSaver_notUpload', (ctx: ContextMessageUpdateCustom) => {
+            ctx.getChat().then(T => {
+                const ui = new UserChatInfo(T);
+                console.log(ui.print());
+
+                if (!botAdmin.isAdmin(ui)) {
+                    ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
+                    return;
+                }
+
+                this.needUpload = false;
+
+                // if (this.webPageSaverListDB.by('id', ui.id)) {
+                //     ctx.reply('Em? (⊙_⊙)？'
+                //         + '\nyou can use /stop_webSaver to exit Web Page Saver Mode. '
+                //         + '\nor send me a web page URL , i will save it.'
+                //     );
+                //     return;
+                // }
+                //
+                // this.webPageSaverListDB.insert(ui);
+
+                ctx.reply('Hey !!!'
+                    + '\nyou can send me a web page URL , i will save it.'
+                    + '\nor use /stop_webSaver to exit Web Page Saver Mode. '
+                    + '\n'
+                    + '\nBTW : now i ' + (this.needUpload ? 'will' : 'don\'t') + ' upload the result.'
+                    + '\n   you can use "/webSaver_needUpload" to tell me upload then,'
+                    + '\n   or use "/webSaver_notUpload" to tell me don\'t upload then.'
+                    + '\n'
+                    + '\n debug command :'
+                    + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
+                );
+
+            }).catch(E => {
+                // ctx.reply('error, try again. you need use this on private chat.');
+            });
+        });
         botBase.bot.command('start_webSaver', (ctx: ContextMessageUpdateCustom) => {
             ctx.getChat().then(T => {
                 const ui = new UserChatInfo(T);
@@ -193,6 +279,10 @@ export class BotWebPageSaver {
                 ctx.reply('Hey !!!'
                     + '\nyou can send me a web page URL , i will save it.'
                     + '\nor use /stop_webSaver to exit Web Page Saver Mode. '
+                    + '\n'
+                    + '\nBTW : now i ' + (this.needUpload ? 'will' : 'don\'t') + ' upload the result.'
+                    + '\n   you can use "/webSaver_needUpload" to tell me upload then,'
+                    + '\n   or use "/webSaver_notUpload" to tell me don\'t upload then.'
                     + '\n'
                     + '\n debug command :'
                     + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
@@ -304,39 +394,51 @@ export class BotWebPageSaver {
                     s: s,
                 };
                 return ctx.reply(
-                    'ok. file uploading...',
+                    'ok.' + (this.needUpload ? ' file uploading...' : ''),
                     {reply_to_message_id: ctx.message.message_id}
                 ).then(() => R);
             }).then(T => {
-                return ctx.replyWithPhoto({
-                        source: T.d.jpg,
-                    },
-                    {reply_to_message_id: ctx.message.message_id},
-                ).then(() => T).catch(E => {
-                    console.error(E);
-                    T.e.push(E);
+                if (this.needUpload) {
+                    return ctx.replyWithPhoto({
+                            source: T.d.jpg,
+                        },
+                        {reply_to_message_id: ctx.message.message_id},
+                    ).then(() => T).catch(E => {
+                        console.error(E);
+                        T.e.push(E);
+                        return T;
+                    });
+                } else {
                     return T;
-                });
+                }
             }).then(T => {
-                return ctx.replyWithDocument({
-                        source: T.d.png,
-                    },
-                    {reply_to_message_id: ctx.message.message_id},
-                ).then(() => T).catch(E => {
-                    console.error(E);
-                    T.e.push(E);
+                if (this.needUpload) {
+                    return ctx.replyWithDocument({
+                            source: T.d.png,
+                        },
+                        {reply_to_message_id: ctx.message.message_id},
+                    ).then(() => T).catch(E => {
+                        console.error(E);
+                        T.e.push(E);
+                        return T;
+                    });
+                } else {
                     return T;
-                });
+                }
             }).then(T => {
-                return ctx.replyWithDocument({
-                        source: T.d.pdf,
-                    },
-                    {reply_to_message_id: ctx.message.message_id},
-                ).then(() => T).catch(E => {
-                    console.error(E);
-                    T.e.push(E);
+                if (this.needUpload) {
+                    return ctx.replyWithDocument({
+                            source: T.d.pdf,
+                        },
+                        {reply_to_message_id: ctx.message.message_id},
+                    ).then(() => T).catch(E => {
+                        console.error(E);
+                        T.e.push(E);
+                        return T;
+                    });
+                } else {
                     return T;
-                });
+                }
             }).then(T => {
                 const sl = T.d.pdf
                     + "\t" + T.d.png
