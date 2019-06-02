@@ -1,4 +1,4 @@
-import {Telegraf, ContextMessageUpdate} from "telegraf";
+import Telegraf, {ContextMessageUpdate} from "telegraf";
 import {Chat, ChatPhoto, Message} from "telegraf/typings/telegram-types";
 import * as moment from "moment";
 import {Subject} from "rxjs";
@@ -89,7 +89,7 @@ export class BotBase {
             console.log("not find socksPort, not use SocksAgent");
         }
 
-        this.bot = new (require("telegraf"))(process.env.BOT_TOKEN, {
+        this.bot = new Telegraf(process.env.BOT_TOKEN, {
             telegram: {agent: socksAgent}
         });
 
