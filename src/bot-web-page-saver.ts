@@ -129,17 +129,66 @@ class WebPageUserChatInfo extends UserChatInfo {
     height?: number;
 }
 
+class WebPageSaverConfig {
+    key: string;
+    value: any;
+}
+
 export class BotWebPageSaver {
     public webPageSaverListDB: Loki.Collection<WebPageUserChatInfo> =
         this.db.collectionGetter("webPageSaverList", {unique: ['id']});
 
-    private needUpload: boolean = true;
+    private webPageSaverConfigDB: Loki.Collection<WebPageSaverConfig> =
+        this.db.collectionGetter("webPageSaverConfig", {unique: ['key']});
+
+    private get needUpload() {
+        return this.getConfig('needUpload');
+    }
+
+    private set needUpload(b: boolean) {
+        this.setConfig('needUpload', b);
+    }
+
+    private getConfig(key: string) {
+        let c: WebPageSaverConfig = this.webPageSaverConfigDB.by('key', key);
+        return c.value;
+    }
+
+    private setConfig(key: string, value: any) {
+        let c: WebPageSaverConfig = this.webPageSaverConfigDB.by('key', key);
+        if (isNil(c)) {
+            c = new WebPageSaverConfig();
+            c.key = key;
+            c.value = value;
+            this.webPageSaverConfigDB.insert(c);
+        } else {
+            c.value = value;
+            this.webPageSaverConfigDB.update(c);
+        }
+    }
+
+    private checkConfig(key: string, defaultValue: any): WebPageSaverConfig {
+        let c: WebPageSaverConfig = this.webPageSaverConfigDB.by('key', key);
+        if (isNil(c)) {
+            c = new WebPageSaverConfig();
+            c.key = key;
+            c.value = defaultValue;
+            this.webPageSaverConfigDB.insert(c);
+        }
+        return {
+            key: c.key,
+            value: c.value,
+        };
+    }
 
     constructor(private botBase: BotBase, private db: Database, private botAdmin: BotAdmin) {
         if (!db.databaseInitialize.getValue()) {
             console.error("Must Init & Load Database before construct BotWebEvent");
             throw "Must Init & Load Database before construct BotWebEvent";
         }
+
+        // init all config value default state on here, if not have set it before
+        this.checkConfig('needUpload', true);
 
         botBase.botHelpEvent.subscribe(ctx => {
             ctx.getChat().then(T => {
