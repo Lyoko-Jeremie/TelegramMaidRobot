@@ -102,18 +102,31 @@ export class BotBase {
 
 
         this.bot.use((ctx: ContextMessageUpdateCustom, next: () => any) => {
-            ctx.getChat().then(T => {
-                const ui = new UserChatInfo(T);
-                console.log(ui.print());
-                // console.log("Last received non text message ARE come from:\n" + ui.print());
-                ctx.chatInfo = T;
-                ctx.userChatInfo = ui;
-                return next();
-            }).catch(E => {
-                // console.error("received non text message getChat ERROR.", E);
+            (async () => {
 
+                for (let retry = 0; retry !== 3; ++retry) {
+                    // the ctx.getChat failed re-try guard
+                    try {
+
+                        const T = await ctx.getChat();
+
+                        const ui = new UserChatInfo(T);
+                        console.log(ui.print());
+                        // console.log("Last received non text message ARE come from:\n" + ui.print());
+                        ctx.chatInfo = T;
+                        ctx.userChatInfo = ui;
+                        return next();
+
+                    } catch (E) {
+                        // console.error("received non text message getChat ERROR.", E);
+                        console.error('ctx.getChat for userChatInfo has been ERROR:', E, ' on retry NO:', retry);
+                    }
+                }
+
+                console.error('ctx.getChat for userChatInfo ERROR for every retry !!!');
                 return next();
-            });
+
+            })();
         });
 
         this.bot.use((ctx: ContextMessageUpdate, next: () => any) => {
