@@ -74,15 +74,22 @@ export class BotBase {
         if (process.env.socksPort) {
             console.log("find socksPort, use SocksAgent");
 
-            const SocksAgent = require('socks5-https-client/lib/Agent');
+            // const SocksAgent = require('socks5-https-client/lib/Agent');
+            //
+            // socksAgent = new SocksAgent({
+            //     // socksHost: config.proxy.host,
+            //     // socksPort: config.proxy.port,
+            //     // socksUsername: config.proxy.login,
+            //     // socksPassword: config.proxy.psswd,
+            //     socksHost: process.env.socksHost,
+            //     socksPort: process.env.socksPort,
+            // });
 
-            socksAgent = new SocksAgent({
-                // socksHost: config.proxy.host,
-                // socksPort: config.proxy.port,
-                // socksUsername: config.proxy.login,
-                // socksPassword: config.proxy.psswd,
-                socksHost: process.env.socksHost,
-                socksPort: process.env.socksPort,
+            // https://github.com/telegraf/telegraf/issues/581
+            const SocksProxyAgent = require('socks-proxy-agent');
+            socksAgent = new SocksProxyAgent({
+                host: process.env.socksHost,
+                port: process.env.socksPort,
             });
 
         } else {

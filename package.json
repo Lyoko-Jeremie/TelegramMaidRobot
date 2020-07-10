@@ -26,6 +26,7 @@
     "phantom": "^6.0.3",
     "rxjs": "^6.3.3",
     "rxjs-compat": "^6.3.3",
+    "socks-proxy-agent": "^5.0.0",
     "socks5-https-client": "^1.2.1",
     "telegraf": "^3.25.5",
     "typescript": "^3.2.2"
