@@ -9,12 +9,19 @@ import * as phantom from "phantom";
 import * as fs from "fs";
 import * as Bluebird from "bluebird";
 import {PhantomJS} from "phantom";
+import * as process from "process";
 
-type getPageConfig = {
+interface ProxyConfig {
+    host: string,
+    port: string,
+    type: 'socks5' | 'http',
+}
+
+interface getPageConfig {
     url: string,
     viewportSize?: { width: number, height: number },
-
-};
+    proxy?: ProxyConfig,
+}
 
 const defaultViewportSize = {
     width: 800,
@@ -24,11 +31,18 @@ const defaultViewportSize = {
 let runningPhantomObject: Map<string, PhantomJS> = new Map<string, PhantomJS>();
 
 async function getPage(config?: getPageConfig) {
-    const instance = await phantom.create();
+    const instance = await phantom.create(["--proxy=127.0.0.1:5000", "--proxy-type=socks5"]);
+
     const fileName = moment().format('YYYY_MM_DD_HH_mm_ss_SSS');
     runningPhantomObject.set(fileName, instance);
 
     const page = await instance.createPage();
+
+    // dont work
+    // // https://stackoverflow.com/questions/28571601/how-do-i-set-proxy-in-phantomjs
+    // // https://github.com/ariya/phantomjs/blob/master/examples/openurlwithproxy.js
+    // await (instance as any).setProxy('127.0.0.1', '5000', 'socks5', null, null);
+
     await page.on('onResourceRequested', function (requestData) {
         console.info('Requesting', requestData.url);
     });
@@ -124,6 +138,31 @@ async function getPage(config?: getPageConfig) {
     };
 }
 
+let ProxyConfigCache: { has: boolean, c?: ProxyConfig } = undefined;
+
+function getProxyConfig(): ProxyConfig | undefined {
+    if (ProxyConfigCache) {
+        return ProxyConfigCache.c;
+    }
+    if (process.env.socksPort) {
+        ProxyConfigCache = {
+            has: true,
+            c: {
+                host: process.env.socksHost,
+                port: process.env.socksPort,
+                type: 'socks5',
+            },
+        };
+        return ProxyConfigCache.c;
+    } else {
+        ProxyConfigCache = {
+            has: false,
+            c: undefined,
+        };
+        return undefined;
+    }
+}
+
 class WebPageUserChatInfo extends UserChatInfo {
     width?: number;
     height?: number;
@@ -140,6 +179,18 @@ export class BotWebPageSaver {
 
     private webPageSaverConfigDB: Loki.Collection<WebPageSaverConfig> =
         this.db.collectionGetter("webPageSaverConfig", {unique: ['key']});
+
+    private get haveProxy() {
+        return !!getProxyConfig();
+    }
+
+    private get useProxy() {
+        return this.getConfig('useProxy');
+    }
+
+    private set useProxy(b: boolean) {
+        this.setConfig('useProxy', b);
+    }
 
     private get needUpload() {
         return this.getConfig('needUpload');
@@ -181,6 +232,38 @@ export class BotWebPageSaver {
         };
     }
 
+    private infoString(isStarted = true) {
+        let s = ''
+            + '\n';
+
+        if (isStarted) {
+            s = s
+                + '\nyou can send me a web page URL , i will save it.'
+                + '\nor use /stop_webSaver to exit Web Page Saver Mode. '
+                + '\n';
+        }
+
+        s = s
+            + '\nBTW : now i ' + (this.needUpload ? 'will' : 'don\'t') + ' upload the result.'
+            + '\n   you can use "/webSaver_needUpload" to tell me upload then,'
+            + '\n   or use "/webSaver_notUpload" to tell me don\'t upload then.';
+
+        if (this.haveProxy) {
+            s = s
+                + '\nand i will ' + (this.useProxy ? '' : 'NOT ') + 'use proxy to download page.'
+                + '\n   you can use "/webSaver_enableProxy" to tell me enable proxy,'
+                + '\n   or use "/webSaver_disableProxy" to tell me disable proxy.'
+            ;
+        }
+
+        s = s
+            + '\n'
+            + '\n debug command :'
+            + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .';
+
+        return s;
+    }
+
     constructor(private botBase: BotBase, private db: Database, private botAdmin: BotAdmin) {
         if (!db.databaseInitialize.getValue()) {
             console.error("Must Init & Load Database before construct BotWebEvent");
@@ -189,6 +272,7 @@ export class BotWebPageSaver {
 
         // init all config value default state on here, if not have set it before
         this.checkConfig('needUpload', true);
+        this.checkConfig('useProxy', false);
 
         botBase.botHelpEvent.subscribe(ctx => {
             ctx.getChat().then(T => {
@@ -198,15 +282,7 @@ export class BotWebPageSaver {
                     if (this.webPageSaverListDB.by('id', ui.id)) {
                         ctx.reply(''
                             + 'Oh~~ I see you are in Web Page Saver Mode.'
-                            + '\nSo~ you can send me a web page URL , i will save it.'
-                            + '\nor Command me "/stop_webSaver" to stop Web Page Saver Mode.'
-                            + '\n'
-                            + '\nBTW : now i ' + (this.needUpload ? 'will' : 'don\'t') + ' upload the result.'
-                            + '\n   you can use "/webSaver_needUpload" to tell me upload then,'
-                            + '\n   or use "/webSaver_notUpload" to tell me don\'t upload then.'
-                            + '\n'
-                            + '\n debug command :'
-                            + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
+                            + this.infoString()
                         );
                         return;
                     }
@@ -214,13 +290,7 @@ export class BotWebPageSaver {
                         + 'Oh~~ I see you are Master.'
                         + '\nSo~ you can use Master Only Command:'
                         + '\n Command me "/start_webSaver" to start Web Page Saver Mode.'
-                        + '\n'
-                        + '\nBTW : now i ' + (this.needUpload ? 'will' : 'don\'t') + ' upload the result.'
-                        + '\n   you can use "/webSaver_needUpload" to tell me upload then,'
-                        + '\n   or use "/webSaver_notUpload" to tell me don\'t upload then.'
-                        + '\n'
-                        + '\n debug command :'
-                        + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
+                        + this.infoString(false)
                     );
                     return;
                 }
@@ -241,26 +311,8 @@ export class BotWebPageSaver {
 
                 this.needUpload = true;
 
-                // if (this.webPageSaverListDB.by('id', ui.id)) {
-                //     ctx.reply('Em? (⊙_⊙)？'
-                //         + '\nyou can use /stop_webSaver to exit Web Page Saver Mode. '
-                //         + '\nor send me a web page URL , i will save it.'
-                //     );
-                //     return;
-                // }
-                //
-                // this.webPageSaverListDB.insert(ui);
-
                 ctx.reply('Hey !!!'
-                    + '\nyou can send me a web page URL , i will save it.'
-                    + '\nor use /stop_webSaver to exit Web Page Saver Mode. '
-                    + '\n'
-                    + '\nBTW : now i ' + (this.needUpload ? 'will' : 'don\'t') + ' upload the result.'
-                    + '\n   you can use "/webSaver_needUpload" to tell me upload then,'
-                    + '\n   or use "/webSaver_notUpload" to tell me don\'t upload then.'
-                    + '\n'
-                    + '\n debug command :'
-                    + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
+                    + this.infoString()
                 );
 
             }).catch(E => {
@@ -279,26 +331,48 @@ export class BotWebPageSaver {
 
                 this.needUpload = false;
 
-                // if (this.webPageSaverListDB.by('id', ui.id)) {
-                //     ctx.reply('Em? (⊙_⊙)？'
-                //         + '\nyou can use /stop_webSaver to exit Web Page Saver Mode. '
-                //         + '\nor send me a web page URL , i will save it.'
-                //     );
-                //     return;
-                // }
-                //
-                // this.webPageSaverListDB.insert(ui);
+                ctx.reply('Hey !!!'
+                    + this.infoString()
+                );
+
+            }).catch(E => {
+                // ctx.reply('error, try again. you need use this on private chat.');
+            });
+        });
+        botBase.bot.command('webSaver_enableProxy', (ctx: ContextMessageUpdateCustom) => {
+            ctx.getChat().then(T => {
+                const ui = new UserChatInfo(T);
+                console.log(ui.print());
+
+                if (!botAdmin.isAdmin(ui)) {
+                    ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
+                    return;
+                }
+
+                this.useProxy = true;
 
                 ctx.reply('Hey !!!'
-                    + '\nyou can send me a web page URL , i will save it.'
-                    + '\nor use /stop_webSaver to exit Web Page Saver Mode. '
-                    + '\n'
-                    + '\nBTW : now i ' + (this.needUpload ? 'will' : 'don\'t') + ' upload the result.'
-                    + '\n   you can use "/webSaver_needUpload" to tell me upload then,'
-                    + '\n   or use "/webSaver_notUpload" to tell me don\'t upload then.'
-                    + '\n'
-                    + '\n debug command :'
-                    + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
+                    + this.infoString()
+                );
+
+            }).catch(E => {
+                // ctx.reply('error, try again. you need use this on private chat.');
+            });
+        });
+        botBase.bot.command('webSaver_disableProxy', (ctx: ContextMessageUpdateCustom) => {
+            ctx.getChat().then(T => {
+                const ui = new UserChatInfo(T);
+                console.log(ui.print());
+
+                if (!botAdmin.isAdmin(ui)) {
+                    ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
+                    return;
+                }
+
+                this.useProxy = false;
+
+                ctx.reply('Hey !!!'
+                    + this.infoString()
                 );
 
             }).catch(E => {
@@ -326,15 +400,7 @@ export class BotWebPageSaver {
                 this.webPageSaverListDB.insert(ui);
 
                 ctx.reply('Hey !!!'
-                    + '\nyou can send me a web page URL , i will save it.'
-                    + '\nor use /stop_webSaver to exit Web Page Saver Mode. '
-                    + '\n'
-                    + '\nBTW : now i ' + (this.needUpload ? 'will' : 'don\'t') + ' upload the result.'
-                    + '\n   you can use "/webSaver_needUpload" to tell me upload then,'
-                    + '\n   or use "/webSaver_notUpload" to tell me don\'t upload then.'
-                    + '\n'
-                    + '\n debug command :'
-                    + '\n   "/___ForeStopAllRunningWebSaverPhantomObject" .'
+                    + this.infoString()
                 );
 
             }).catch(E => {
@@ -436,6 +502,7 @@ export class BotWebPageSaver {
                     width: cf.width || defaultViewportSize.width,
                     height: cf.height || defaultViewportSize.height,
                 },
+                proxy: (this.haveProxy && this.useProxy ? getProxyConfig() : undefined),
             }).then(T => {
                 let R = {
                     d: T,
