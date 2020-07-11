@@ -1,8 +1,7 @@
-﻿import {BotBase, UserChatInfo} from "./bot-base";
+﻿import {BotBase, ContextMessageUpdateCustom, UserChatInfo} from "./bot-base";
 import {Database} from "./database";
 import * as Loki from "lokijs";
 import * as moment from "moment";
-import {ContextMessageUpdate} from "telegraf";
 import {isNil, get, has} from "lodash";
 import {BotAdmin} from "./bot-admin";
 import * as express from "express";
@@ -40,7 +39,7 @@ export class BotWebEvent {
         }
 
 
-        botBase.bot.command('register', (ctx: ContextMessageUpdate) => {
+        botBase.bot.command('register', (ctx: ContextMessageUpdateCustom) => {
             ctx.getChat().then(T => {
                 const ui = new UserChatInfo(T);
                 console.log(ui.print());
@@ -76,7 +75,7 @@ export class BotWebEvent {
             });
         });
 
-        botBase.bot.command('unregister', (ctx: ContextMessageUpdate) => {
+        botBase.bot.command('unregister', (ctx: ContextMessageUpdateCustom) => {
             ctx.getChat().then(T => {
                 const ui = new UserChatInfo(T);
                 console.log(ui.print());
@@ -89,7 +88,7 @@ export class BotWebEvent {
             });
         });
 
-        botBase.bot.command('get', (ctx: ContextMessageUpdate) => {
+        botBase.bot.command('get', (ctx: ContextMessageUpdateCustom) => {
             ctx.getChat().then(T => {
                 if (!botAdmin.adminListDB.by('id', T.id)) {
                     ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
@@ -100,7 +99,7 @@ export class BotWebEvent {
                 ctx.reply('error, try again. you need use this on private chat.');
             });
         });
-        botBase.bot.command('resetAllRegisterEvent', (ctx: ContextMessageUpdate) => {
+        botBase.bot.command('resetAllRegisterEvent', (ctx: ContextMessageUpdateCustom) => {
             ctx.getChat().then(T => {
                 if (!botAdmin.adminListDB.by('id', T.id)) {
                     ctx.reply("error, i don't know how you are. \n **only** my master can use this.");
@@ -120,7 +119,7 @@ export class BotWebEvent {
                 ctx.reply('error, try again. you need use this on private chat.');
             });
         });
-        botBase.bot.command('count', (ctx: ContextMessageUpdate) => {
+        botBase.bot.command('count', (ctx: ContextMessageUpdateCustom) => {
             ctx.getChat().then(T => {
                 const nd = this.hookListenerListDB.by('cid', T.id);
                 if (!isNil(nd)) {
@@ -132,7 +131,7 @@ export class BotWebEvent {
                 ctx.reply('error, try again. you need use this on private chat.');
             });
         });
-        botBase.bot.command('tick', (ctx: ContextMessageUpdate) => {
+        botBase.bot.command('tick', (ctx: ContextMessageUpdateCustom) => {
             ctx.getChat().then(T => {
                 const nd = this.hookListenerListDB.by('cid', T.id);
                 if (!isNil(nd)) {

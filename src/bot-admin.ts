@@ -1,6 +1,5 @@
 import {asyncSleep, git_pull, restart_service, tsc_build, yarn_update_dependence} from "./self_upgrade_command";
-import {ContextMessageUpdate} from "telegraf";
-import {BotBase, UserChatInfo} from "./bot-base";
+import {BotBase, ContextMessageUpdateCustom, UserChatInfo} from "./bot-base";
 import {Database} from "./database";
 import * as Loki from "lokijs";
 import {isNil} from "lodash";
@@ -56,7 +55,7 @@ export class BotAdmin {
                 ctx.reply('error, try again. you need use this on private chat.');
             });
         });
-        botBase.bot.command('un_admin', (ctx: ContextMessageUpdate) => {
+        botBase.bot.command('un_admin', (ctx: ContextMessageUpdateCustom) => {
             ctx.getChat().then(T => {
                 const ui = new UserChatInfo(T);
                 console.log(ui.print());
@@ -69,7 +68,7 @@ export class BotAdmin {
             });
         });
 
-        botBase.bot.command('self_upgrade', (ctx: ContextMessageUpdate) => {
+        botBase.bot.command('self_upgrade', (ctx: ContextMessageUpdateCustom) => {
             ctx.getChat().then(T => {
                 if (!this.adminListDB.by('id', T.id)) {
                     ctx.reply("error, i don't know how you are. \n **only** my master can use this.");

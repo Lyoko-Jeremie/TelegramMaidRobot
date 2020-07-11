@@ -1,7 +1,8 @@
-import Telegraf, {ContextMessageUpdate} from "telegraf";
+import Telegraf from "telegraf";
 import {Chat, ChatPhoto, Message} from "telegraf/typings/telegram-types";
 import * as moment from "moment";
 import {Subject} from "rxjs";
+import {TelegrafContext} from "telegraf/typings/context";
 
 
 export class UserChatInfo implements Chat {
@@ -60,14 +61,14 @@ export class UserChatInfo implements Chat {
 
 }
 
-export interface ContextMessageUpdateCustom extends ContextMessageUpdate {
+export interface ContextMessageUpdateCustom extends TelegrafContext {
     chatInfo: Chat;
     userChatInfo: UserChatInfo;
 }
 
 export class BotBase {
-    public bot: Telegraf<ContextMessageUpdate>;
-    public botHelpEvent: Subject<ContextMessageUpdate> = new Subject<ContextMessageUpdate>();
+    public bot: Telegraf<ContextMessageUpdateCustom>;
+    public botHelpEvent: Subject<ContextMessageUpdateCustom> = new Subject<ContextMessageUpdateCustom>();
 
     constructor() {
         let socksAgent;
@@ -136,7 +137,7 @@ export class BotBase {
             })();
         });
 
-        this.bot.use((ctx: ContextMessageUpdate, next: () => any) => {
+        this.bot.use((ctx: ContextMessageUpdateCustom, next: () => any) => {
             if (ctx.message && ctx.message.text) {
                 console.log("=received : ", ctx.message.text);
             } else {
@@ -153,7 +154,7 @@ export class BotBase {
         });
 
 
-        const helpFunc = (ctx: ContextMessageUpdate) => {
+        const helpFunc = (ctx: ContextMessageUpdateCustom) => {
             let s: string = `How to use me :`;
             const sList: string[] = [
                 'Send me a sticker',
@@ -178,7 +179,7 @@ export class BotBase {
         this.bot.help(helpFunc);
         this.bot.command("help", helpFunc);
 
-        this.bot.start((ctx: ContextMessageUpdate) => {
+        this.bot.start((ctx: ContextMessageUpdateCustom) => {
             ctx.reply('Welcome!\nYou can send me "/help" to see the action list.');
             ctx.getChat().then(T => {
                 const ui = new UserChatInfo(T);
