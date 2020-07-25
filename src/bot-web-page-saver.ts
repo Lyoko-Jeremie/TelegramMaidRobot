@@ -31,7 +31,22 @@ const defaultViewportSize = {
 let runningPhantomObject: Map<string, PhantomJS> = new Map<string, PhantomJS>();
 
 async function getPage(config?: getPageConfig) {
-    const instance = await phantom.create(["--proxy=127.0.0.1:5000", "--proxy-type=socks5"]);
+    const createProxyParams = [];
+    // ["--proxy=127.0.0.1:5000", "--proxy-type=socks5"]
+    if (config.proxy) {
+        createProxyParams.push(`--proxy=${config.proxy.host}:${config.proxy.port}`);
+        switch (config.proxy.type) {
+            case "http":
+                createProxyParams.push("--proxy-type=http");
+                break;
+            case "socks5":
+                createProxyParams.push("--proxy-type=socks5");
+                break;
+            default:
+                break;
+        }
+    }
+    const instance = await phantom.create(createProxyParams);
 
     const fileName = moment().format('YYYY_MM_DD_HH_mm_ss_SSS');
     runningPhantomObject.set(fileName, instance);
