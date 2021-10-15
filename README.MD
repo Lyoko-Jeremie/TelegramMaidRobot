@@ -33,3 +33,9 @@ and install whatever font you need to show on the web pages.
 BTW: because of the issue of phantom, this function need project local as temp storage dir to storage those web pages.
 
 
+----
+
+if the `phantomjs-prebuilt` hang the install process on windows , you can follow the resolve, those may help you :    
+https://stackoverflow.com/a/40992382  
+https://phantomjs.org/download.html  
+
