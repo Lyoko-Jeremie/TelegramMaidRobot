@@ -17,7 +17,6 @@ how to run
 3 run ```yarn run start``` to run,   
 
 
-
 data storage
 
 all database will save on ```db``` dir.
@@ -39,3 +38,10 @@ if the `phantomjs-prebuilt` hang the install process on windows , you can follow
 https://stackoverflow.com/a/40992382  
 https://phantomjs.org/download.html  
 
+ 
+
+or use `npm_config_http_proxy` to set proxy
+
+```
+set npm_config_http_proxy=http://127.0.0.1:5000
+```
