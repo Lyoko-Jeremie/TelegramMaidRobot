@@ -18,7 +18,7 @@
     "@types/phantom": "^3.2.5",
     "bluebird": "^3.5.3",
     "core-js": "^2.6.2",
-    "express": "^4.17.3",
+    "express": "^4.19.2",
     "html-pdf": "^3.0.1",
     "lodash": "^4.17.21",
     "lokijs": "^1.5.6",
